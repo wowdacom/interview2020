@@ -1,19 +1,26 @@
 <template>
   <v-app>
+    <NavBar/>
     <v-main>
-      <HelloWorld/>
+      
+      <VideoLists/>
     </v-main>
+    <v-footer app>
+      <!-- -->
+    </v-footer>
   </v-app>
 </template>
 
 <script>
-import HelloWorld from './components/HelloWorld';
+import VideoLists from './components/VideoLists';
+import NavBar from './components/NavBar';
 
 export default {
   name: 'App',
 
   components: {
-    HelloWorld,
+    VideoLists,
+    NavBar
   },
 
   data: () => ({
