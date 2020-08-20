@@ -7,8 +7,8 @@ export default new Vuex.Store({
   state: {
     auth: process.env.VUE_APP_MY_ENV_VARIABLE,
     pageDefaultSetting: {
-      perPage: 20,
-      totalData: 100,
+      perPage: 10,
+      totalData: 50,
       pageStart: 0
     },
     videoLists: [
@@ -68,11 +68,10 @@ export default new Vuex.Store({
     },
     handleGapi(state, targetPage) {
       let vm = this._vm,
-          pageStart = state.pageDefaultSetting.pageStart = targetPage - 1,
+          pageStart = (targetPage - 1) * state.pageDefaultSetting.perPage,
           pageEnd = pageStart + state.pageDefaultSetting.perPage;
 
       state.currentVideoLists = [ ...state.videoLists.slice(pageStart, pageEnd) ]
-
           // state.pagination.pre = pageStart
           // state.pagination.next = pageStart + 1
 
