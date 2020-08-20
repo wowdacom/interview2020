@@ -2,7 +2,7 @@
   <v-container>
     <v-row no-gutters>
         <v-col
-          v-for="n in videoLists"
+          v-for="(n, index) in videoLists"
           :key="n.id"
           cols="12"
           sm="4"
@@ -50,7 +50,7 @@
                 SAVE
               </v-btn>
               <v-spacer></v-spacer>
-              <v-btn icon>
+              <v-btn  :color="n.isLike ? 'red' : 'grey'" @click="handleLike(index)" icon>
                 <v-icon>mdi-heart</v-icon>
               </v-btn>
               <v-btn icon>
@@ -73,8 +73,7 @@
           v-model="pagination.page"
           :length="pagination.totalResults"
           :total-visible="7"
-          @next="handleNext"
-          @previous="handlePrevious"
+          @input="handleSpecificPage"
         ></v-pagination>
       </div>
   </v-container>
@@ -108,12 +107,18 @@
         // 2. Initialize the JavaScript client library.
         this.$store.dispatch('initVideoListData')
       },
+      handleSpecificPage(targetPage){
+        this.$store.dispatch('handleSpecificPage', targetPage)
+      },
       handleNext(page){
         this.$store.dispatch('handleNextVideoListData')
       },
       handlePrevious(){
         this.$store.dispatch('handlePreVideoListData')
       },
+      handleLike(cardIndex){
+        this.$store.dispatch('handleLike', cardIndex)
+      }
     }
   }
 </script>
