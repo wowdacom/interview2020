@@ -23,7 +23,7 @@
             <div ></div>
             <v-img
               v-html="n.player.embedHtml"
-              :src="n.snippet.thumbnails.standard.url"
+              :src="n.snippet.thumbnails.default.url"
             ></v-img>
         
             <v-card-text>
@@ -72,7 +72,6 @@
         <v-pagination
           v-model="pagination.page"
           :length="pagination.totalResults"
-          :total-visible="7"
           @input="handleSpecificPage"
         ></v-pagination>
       </div>

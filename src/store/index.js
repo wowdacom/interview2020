@@ -7,7 +7,7 @@ export default new Vuex.Store({
   state: {
     auth: process.env.VUE_APP_MY_ENV_VARIABLE,
     pageDefaultSetting: {
-      perPage: 10,
+      perPage: 12,
       totalData: 50,
       pageStart: 0
     },
@@ -20,7 +20,7 @@ export default new Vuex.Store({
     pagination: {
       page: 1,
       resultsPerPage: 12,
-      totalResults: 100,
+      totalResults: 0,
       pre: '',
       next: ''
     },
@@ -38,10 +38,8 @@ export default new Vuex.Store({
   },
   mutations: {
     initVideoListData (state) {
-      let vm = this._vm,
-          pageStart = state.pageDefaultSetting.pageStart,
-          pageEnd = pageStart + state.pageDefaultSetting.perPage;
-      state.pagination.totalResults = state.pageDefaultSetting.totalData / state.pageDefaultSetting.perPage;
+      let vm = this._vm;
+
       vm.$gapi.load('client', function(){
         vm.$gapi.client.init({
           'apiKey': state.auth
@@ -51,13 +49,35 @@ export default new Vuex.Store({
             'path': `https://www.googleapis.com/youtube/v3/videos?part=snippet,contentDetails,status,player,statistics&chart=mostPopular&maxResults=${state.pageDefaultSetting.totalData}&regionCode=TW`,
           })
         }).then(function(response) {
+          let dataListToken = response.result.nextPageToken !== 'undefined' ? response.result.nextPageToken : '';
           response.result.items.forEach((element, index) => {
             state.videoLists[index] = { ...element, isLike: false}
           });
 
+          
+
+
+          // state.pagination.totalResults = response.result.pageInfo.totalResults !== 'undefined' ? response.result.pageInfo.totalResults : 0
+          // state.pagination.next = response.result.nextPageToken !== 'undefined' ? response.result.nextPageToken : '';
+          // state.pagination.pre = response.result.prevPageToken !== 'undefined' ? response.result.prevPageToken : '';
+          return vm.$gapi.client.request({
+            'path': `https://www.googleapis.com/youtube/v3/videos?part=snippet,contentDetails,status,player,statistics&chart=mostPopular&maxResults=${state.pageDefaultSetting.totalData}&pageToken=${dataListToken}&regionCode=TW`,
+          })
+        }, function(reason) {
+          // console.log('Error: ' + reason.result.error.message);
+        }).then(function(response) {
+          let myIndexStart = state.videoLists.length,
+              pageStart = state.pageDefaultSetting.pageStart,
+              pageEnd = pageStart + state.pageDefaultSetting.perPage;
+          response.result.items.forEach((element, index) => {
+            console.log(myIndexStart + index)
+            state.videoLists[myIndexStart + index] = { ...element, isLike: false}
+          });
+          console.log(state.videoLists)
           state.currentVideoLists = [ ...state.videoLists.slice(pageStart, pageEnd) ]
           state.pagination.pre = pageStart
           state.pagination.next = pageStart + 1
+          state.pagination.totalResults = (state.videoLists.length - state.videoLists.length % state.pageDefaultSetting.perPage) / state.pageDefaultSetting.perPage + 1;
           // state.pagination.totalResults = response.result.pageInfo.totalResults !== 'undefined' ? response.result.pageInfo.totalResults : 0
           // state.pagination.next = response.result.nextPageToken !== 'undefined' ? response.result.nextPageToken : '';
           // state.pagination.pre = response.result.prevPageToken !== 'undefined' ? response.result.prevPageToken : '';
@@ -66,12 +86,13 @@ export default new Vuex.Store({
         });
       });
     },
-    handleGapi(state, targetPage) {
+    handleGapi(state, targetPage = 1) {
       let vm = this._vm,
           pageStart = (targetPage - 1) * state.pageDefaultSetting.perPage,
           pageEnd = pageStart + state.pageDefaultSetting.perPage;
 
       state.currentVideoLists = [ ...state.videoLists.slice(pageStart, pageEnd) ]
+      state.pagination.page = targetPage
           // state.pagination.pre = pageStart
           // state.pagination.next = pageStart + 1
 
@@ -115,7 +136,7 @@ export default new Vuex.Store({
     },
     handleHomeVideoListData (context) {
       if (context.state.pagination.next !== '') {
-        context.commit('handleGapi')
+        context.commit('handleGapi', 1)
       }
     },
     handleSpecificPage (context, targetPage) {
